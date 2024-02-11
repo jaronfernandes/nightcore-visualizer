@@ -9,17 +9,21 @@ const song_file_name = 'it_aint_me_codeko_nightcore.mp3';
 const img_file_name = 'background_pic.jpeg';
 const font = 'Avenir Next Ultra Light';
 
+const smoothing = 0.91;
 const max_rect_length = 50;
 const stretch_factor = 4;
 const ellipseScaleY = 0.8;
 const height_translate_factor = 1.9;
 
-var num_abovebelow_threshold = 0;
-var on_chorus = false;
 const consecutive_thresholds = 20;
 const error = 5;
 const amp_condition_val = 200;
+var num_abovebelow_threshold = 0;
+var on_chorus = false;
 var particles = [];
+
+const visualizer_setting = 1;  // 0, 1, 2
+var w;
 
 function spaceOutText(text) {
     var spaced_text = '';
@@ -52,185 +56,136 @@ function preload() {
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    // angleMode(DEGREES);
+    if (visualizer_setting == 0) {
+        angleMode(DEGREES);
+    }
     imageMode(CENTER);
     ellipseMode(CENTER);
     textAlign(CENTER);
-    fft = new p5.FFT();
+    fft = new p5.FFT(smoothing, 1024);
 
     if (blur_image) {
         img.filter(BLUR, 5);
     }
+
+    w = width / 128;
 }
 
 function draw() {
     background(0);
 
-    translate(width / 2, height / 2);
-    // rotate(-90)
-    // scale(0.75, 2.25);
+    if (visualizer_setting != 2) {
+        translate(width / 2, height / 2);
+        // rotate(-90);
+        // scale(0.75, 2.25);
 
-    fft.analyze();
-    amp  = fft.getEnergy(20, 200);
+        fft.analyze();
+        var amp = fft.getEnergy(20, 200);
 
-    push();
-    if (amp > amp_condition_val) {
-        rotate(random(-0.005, 0.005));
+        push();
+        if (amp > amp_condition_val) {
+            rotate(random(-0.005, 0.005));
+        }
+        image(img, 0, 0, width + 100, height + 100);
+        pop();
+
+        stroke(255, 255, 255);
+        noFill();
+        strokeWeight(5);
+        smooth();
+
+        var waveform = fft.waveform();
+        var spectrum = fft.analyze();
+        var amp = fft.getEnergy(20, 200);
     }
-    image(img, 0, 0, width + 100, height + 100);
-    pop();
-
-    stroke(255, 255, 255);
-    noFill();
-    strokeWeight(5);
-    smooth();
-
-    var waveform = fft.waveform()
 
     for (var t = -1; t <= 1; t += 2) {
-        // var totalRectangles = 180 / (1/3); // Total number of rectangles you want
-        // var angleIncrement = TWO_PI / totalRectangles; // Even angular increment
+        if (visualizer_setting == 2) {
+            strokeWeight(0);
+            stroke(255, 255, 255);
+            for (var i = 0; i < spectrum.length; i++) {
+                var ampy = spectrum[(i + 100) % spectrum.length];
 
-        // stroke(255);
-        // beginShape();
-        // noFill();
-        // for (var i = totalRectangles / 2; i < totalRectangles; i++) {
-        //     var angle = i * angleIncrement; // Constant angular increment
-        //     var index = floor(map(angle, 0, TWO_PI, 0, waveform.length - 1));
-        //     var amplitude = waveform[index];
-            
-        //     var baseR = 250;
-        //     var frequencyWeight = pow(1 - (index / (waveform.length - 1)), 2);
-        //     var rectLength = map(amplitude, -1, 1, 0, max_rect_length) * (1); // Consider dynamic adjustment here if needed
-
-         
-        //     // Adjusted for ellipse
-        //     var baseX = (baseR * cos(angle));
-        //     var baseY = (baseR * sin(angle));
-            
-        //     var endX = ((baseR + rectLength) * cos(angle));
-        //     var endY = ((baseR + rectLength) * sin(angle));
-            
-        //     // Draw the rectangle (using lines for simplicity)
-        //     push();
-        //     stroke(255);
-        //     rect(baseX, baseY, 2, -rectLength);
-        //     line(baseX, baseY, endX, endY);
-        //     // vertex(baseX, baseY);
-        //     pop();
-        // }
-        // endShape();
-
+                var y = map(ampy, 0, 256, height, height / 2);
+                // line(i * w, height, i * w, y);
+                fill(i, 255, 255);
+                rect(i * w, y, w, (height - y));
+            }
+        }
         // GOOD ONE BELOW:
 
-        var totalRectangles = 180 / 0.125; // Total number of rectangles you want
-        var angleIncrement = TWO_PI / totalRectangles; // Even angular increment
+        if (visualizer_setting == 1) {
+            var totalRectangles = 180 / 0.125; // Total number of rectangles you want
+            var angleIncrement = TWO_PI / totalRectangles; // Even angular increment
 
-        stroke(255);
-        beginShape();
-        noFill();
-        for (var i = totalRectangles / 2; i < totalRectangles; i++) {
-            var angle = i * angleIncrement; // Constant angular increment
-            var index = floor(map(angle, 0, TWO_PI, 0, waveform.length - 1));
-            var amplitude = waveform[index];
-            
-            var baseR = 250;
-            // var rectLength = 25 + exp(amplitude / 0.1); // Consider dynamic adjustment here if needed
-            var rectLength = map(amplitude, -1, 1, 0, max_rect_length); // Consider dynamic adjustment here if needed
-
-         
-            // Adjusted for ellipse
-            var baseX = (baseR * cos(angle)) * t * stretch_factor;
-            var baseY = (baseR * sin(angle)) * ellipseScaleY + (height / height_translate_factor);
-            
-            var endX = ((baseR + rectLength) * cos(angle)) * t * stretch_factor;
-            var endY = ((baseR + rectLength) * sin(angle)) * ellipseScaleY + (height / height_translate_factor);
-            
-            // Draw the rectangle (using lines for simplicity)
-            push();
             stroke(255);
-            rect(baseX, baseY, 2, -rectLength);
-            // line(baseX, baseY, endX, endY);
-            // vertex(baseX, baseY);
-            pop();
-            
-            stroke(0, 255, 255, 240);
-            vertex(endX, endY);
+            beginShape();
+            noFill();
+            for (var i = totalRectangles / 2; i < totalRectangles; i++) {
+                var angle = i * angleIncrement; // Constant angular increment
+                var index = floor(map(angle, 0, TWO_PI, 0, waveform.length - 1));
+                var amplitude = waveform[index];
+                
+                var baseR = 250;
+                // var rectLength = 25 + exp(amplitude / 0.1); // Consider dynamic adjustment here if needed
+                var rectLength = map(amplitude, -1, 1, 0, max_rect_length); // Consider dynamic adjustment here if needed
 
-            // stroke(0, 255, 255, 0);
-            //rect(endX, endY, 2, -1);
-            fill(0, 0, 0, 127);
-            stroke(0, 0, 0, 0);
-            vertex(baseX, baseY);
+            
+                // Adjusted for ellipse
+                var baseX = (baseR * cos(angle)) * t * stretch_factor;
+                var baseY = (baseR * sin(angle)) * ellipseScaleY + (height / height_translate_factor);
+                
+                var endX = ((baseR + rectLength) * cos(angle)) * t * stretch_factor;
+                var endY = ((baseR + rectLength) * sin(angle)) * ellipseScaleY + (height / height_translate_factor);
+                
+                // Draw the rectangle (using lines for simplicity)
+                push();
+                stroke(255);
+                rect(baseX, baseY, 2, -rectLength);
+                // line(baseX, baseY, endX, endY);
+                // vertex(baseX, baseY);
+                pop();
+                
+                stroke(0, 255, 255, 240);
+                vertex(endX, endY);
+
+                // stroke(0, 255, 255, 0);
+                //rect(endX, endY, 2, -1);
+                fill(0, 0, 0, 127);
+                stroke(0, 0, 0, 0);
+                vertex(baseX, baseY);
+            }
+            endShape();
         }
-        endShape();
-
-
-
-        // OLD CODE
-
-        // beginShape();
-        // stroke(255);
-        // fill(0, 0, 0, 200);
-        // for (var i = 0; i <= 180; i += 0.5) {
-        //     var index = floor(map(i, 0, 180, 0, waveform.length - 1));
-        //     var amplitude = waveform[index]; // Amplitude at this point
-            
-        //     // Base radius for the starting line of rectangles
-        //     var baseR = 250; // Adjust as necessary
-            
-        //     // Calculate the length of the rectangle based on the amplitude
-        //     var rectLength = map(amplitude, -1, 1, 0, 50); // Map amplitude to length
-            
-        //     // Calculate the position for the base of the rectangle
-        //     var baseX = baseR * sin(i) * t * stretch_factor;
-        //     var baseY = baseR * cos(i) + (height / height_translate_factor);
-            
-        //     // Calculate the end position for the rectangle
-        //     var endX = (baseR + rectLength) * sin(i) * t * stretch_factor;
-        //     var endY = (baseR + rectLength) * cos(i) + (height / height_translate_factor);
-            
-        //     push(); // Save current drawing style settings
-        //     stroke(255); // Set stroke color to white for visibility
-        //     fill(0, 0, 0, 200); // Set fill color with some transparency
-            
-        //     // Draw the rectangle using line for simplicity; adjust as needed for actual rectangles
-        //     line(baseX, baseY, endX, endY);
-            
-        //     pop(); // Restore previous drawing style settings
-        // }
-        // endShape();
-        // beginShape();
-        // noStroke();
-        // fill(0, 0, 0, 200);
-        // for (var i = 0; i <= 180; i += 0.5) {
-        //     var index = floor(map(i, 0, 180, 0, waveform.length - 1));
-
-        //     // new_waveform = smoothWaveform(waveform, 5);
-            
-        //     var r = floor(map(waveform[index], -1, 1, 150, 350));  // original -1, 1, 150, 350
-        //     // var r = map(floor(sqrt((waveform[10 * floor((index + 1 ) / 10)] + 1) * 100)), 0, 10, 150, 350)  // original -1, 1, 150, 350
-
-        //     var x = r * sin(i) * t * stretch_factor;  // to stretch
-        //     var y = r * cos(i) + (height / height_translate_factor); // translate down a bit
-        //     // line(i, height, i, height - y)
-        //     vertex(x,y);
-        // }
-        // endShape();
-        // noFill();
-        // beginShape();
-        // // light blue color
-        // stroke(0, 255, 255, 255);
-        // for (var i = 90; i <= 180; i+= 0.5) {
-        //     var index = floor(map(i, 0, 180, 0, waveform.length - 1));
-            
-        //     var r = map(waveform[index], -1, 1, 150, 350);  // original -1, 1, 150, 350
-
-        //     var x = r * sin(i) * t * stretch_factor;  // to stretch
-        //     var y = r * cos(i) + (height / height_translate_factor); // translate down a bit
-        //     vertex(x,y - 3);
-        // }
-        // endShape();
+        else if (visualizer_setting == 0) {
+            beginShape();
+            stroke(255);
+            fill(0, 0, 0, 200);
+            for (var i = 0; i <= 180; i += 0.5) {
+                var index = floor(map(i, 0, 180, 0, waveform.length - 1));
+                
+                var r = floor(map(waveform[index], -1, 1, 150, 350));  // original -1, 1, 150, 350
+                // var r = map(floor(sqrt((waveform[10 * floor((index + 1 ) / 10)] + 1) * 100)), 0, 10, 150, 350)  // original -1, 1, 150, 350
+                var x = r * sin(i) * t * stretch_factor;  // to stretch
+                var y = r * cos(i) + (height / height_translate_factor); // translate down a bit
+                // line(i, height, i, height - y)
+                vertex(x,y);
+            }
+            endShape();
+            noFill();
+            beginShape();
+            // light blue color
+            stroke(0, 255, 255, 255);
+            for (var i = 90; i <= 180; i+= 0.5) {
+                var index = floor(map(i, 0, 180, 0, waveform.length - 1));
+                
+                var r = map(waveform[index], -1, 1, 150, 350);  // original -1, 1, 150, 350
+                var x = r * sin(i) * t * stretch_factor;  // to stretch
+                var y = r * cos(i) + (height / height_translate_factor); // translate down a bit
+                vertex(x,y - 3);
+            }
+            endShape();
+        }
     }
     
     stroke(255, 255, 255);
@@ -261,7 +216,7 @@ function draw() {
         num_abovebelow_threshold = 0;
     }
 
-    console.log(amp, on_chorus, num_abovebelow_threshold);
+    // console.log(amp, on_chorus, num_abovebelow_threshold);
 
     for (var i = particles.length - 1; i >= 0; i--) {
         if (!particles[i].onEdge()) {
