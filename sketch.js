@@ -3,6 +3,11 @@ var img;
 const blur_image = false;
 var fft;
 
+const song_text = 'It Ain\'t Me'
+const artists = 'Kygo & Selana Gomez (Codeko Remix)'
+const song_file_name = 'it_aint_me_codeko_nightcore.mp3'
+const img_file_name = 'background_pic.jpeg'
+
 const stretch_factor = 4;
 const height_translate_factor = 1.9;
 
@@ -10,13 +15,21 @@ var num_abovebelow_threshold = 0;
 var on_chorus = false;
 const consecutive_thresholds = 20;
 const error = 5;
-const amp_condition_val = 100;
+const amp_condition_val = 200;
 var particles = [];
+
+function spaceOutText(text) {
+    var spaced_text = ''
+    for (var i = 0; i < text.length; i++) {
+        spaced_text += text[i] + ' '
+    }
+    return spaced_text
+}
 
 function preload() {
     console.log('preload')
-    song = loadSound('assets/ewt.mp3')
-    img = loadImage('assets/ag.png')
+    song = loadSound('assets/' + song_file_name)
+    img = loadImage('assets/' + img_file_name)
     console.log('preload done')
 }
 
@@ -25,6 +38,7 @@ function setup() {
     angleMode(DEGREES)
     imageMode(CENTER)
     ellipseMode(CENTER)
+    textAlign(CENTER);
     fft = new p5.FFT()
 
     if (blur_image) {
@@ -34,7 +48,7 @@ function setup() {
 
 function draw() {
     background(0)
-    
+
     translate(width / 2, height / 2)
     // rotate(-90)
     // scale(0.75, 2.25);
@@ -49,11 +63,7 @@ function draw() {
     image(img, 0, 0, width + 100, height + 100)
     pop()
 
-    var alpha = map(amp, 0, 255, 180, 150)
-    fill(0, alpha)
-    noStroke()
-    ellipse(0, 259 + 360, width + 1100, height)
-    stroke(255)
+    stroke(255, 255, 255)
     noFill()
     strokeWeight(5)
     smooth();
@@ -63,19 +73,12 @@ function draw() {
     for (var t = -1; t <= 1; t += 2) {
         beginShape()
         stroke(255)
-        fill(50)
-        for (var i = 90; i <= 180; i += 0.5) {
+        fill(0, 0, 0, 200)
+        for (var i = 0; i <= 180; i += 0.5) {
             var index = floor(map(i, 0, 180, 0, waveform.length - 1))
             
-            var r = map(waveform[index], -1, 1, 150, 350)  // original -1, 1, 150, 350
+            var r = floor(map(waveform[index], -1, 1, 150, 350))  // original -1, 1, 150, 350
             // var r = map(floor(sqrt((waveform[10 * floor((index + 1 ) / 10)] + 1) * 100)), 0, 10, 150, 350)  // original -1, 1, 150, 350
-            
-            // if (r < 225) {
-            //     r = 350
-            // }
-            // else {
-            //     r = r
-            // }
 
             var x = r * sin(i) * t * stretch_factor  // to stretch
             var y = r * cos(i) + (height / height_translate_factor) // translate down a bit
@@ -83,28 +86,28 @@ function draw() {
             vertex(x,y)
         }
         endShape()
-        // beginShape()
-        // // light blue color
-        // stroke(0, 255, 255, 240)
-        // for (var i = 90; i <= 180; i++) {
-        //     var index = floor(map(i, 0, 180, 0, waveform.length - 1))
+        noFill()
+        beginShape()
+        // light blue color
+        stroke(0, 255, 255, 255)
+        for (var i = 90; i <= 180; i+= 0.5) {
+            var index = floor(map(i, 0, 180, 0, waveform.length - 1))
             
-        //     var r = map(waveform[index], -1, 1, 150, 350)  // original -1, 1, 150, 350
+            var r = map(waveform[index], -1, 1, 150, 350)  // original -1, 1, 150, 350
 
-        //     if (r < 225) {
-        //         r = 350
-        //     }
-        //     else {
-        //         r = r
-        //     }
-
-        //     var x = r * sin(i) * t * stretch_factor  // to stretch
-        //     var y = r * cos(i) + (height / height_translate_factor) // translate down a bit
-        //     // line(i, height, i, height - y)
-        //     vertex(x,y - 3)
-        // }
-        // endShape()
+            var x = r * sin(i) * t * stretch_factor  // to stretch
+            var y = r * cos(i) + (height / height_translate_factor) // translate down a bit
+            vertex(x,y - 3)
+        }
+        endShape()
     }
+    
+    stroke(255, 255, 255)
+    textFont('Avenir Next Ultra Light', 40);
+    strokeWeight(3)
+    fill(255, 255, 255)
+    text(spaceOutText(song_text), 0, 295);
+    text(spaceOutText(artists), 0, 370);
 
     var p = new Particle()
     particles.push(p)
