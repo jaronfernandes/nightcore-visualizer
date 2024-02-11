@@ -7,6 +7,7 @@ const song_text = 'It Ain\'t Me'
 const artists = 'Kygo & Selana Gomez (Codeko Remix)'
 const song_file_name = 'it_aint_me_codeko_nightcore.mp3'
 const img_file_name = 'background_pic.jpeg'
+const font = 'Avenir Next Ultra Light'
 
 const stretch_factor = 4;
 const height_translate_factor = 1.9;
@@ -58,7 +59,7 @@ function draw() {
 
     push()
     if (amp > amp_condition_val) {
-        rotate(random(-0.1, 0.1))
+        rotate(random(-0.3, 0.3))
     }
     image(img, 0, 0, width + 100, height + 100)
     pop()
@@ -103,7 +104,7 @@ function draw() {
     }
     
     stroke(255, 255, 255)
-    textFont('Avenir Next Ultra Light', 40);
+    textFont(font, 40);
     strokeWeight(3)
     fill(255, 255, 255)
     text(spaceOutText(song_text), 0, 295);
