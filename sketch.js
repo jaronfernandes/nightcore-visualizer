@@ -24,6 +24,7 @@ function setup() {
     createCanvas(windowWidth, windowHeight)
     angleMode(DEGREES)
     imageMode(CENTER)
+    ellipseMode(CENTER)
     fft = new p5.FFT()
 
     if (blur_image) {
@@ -33,9 +34,7 @@ function setup() {
 
 function draw() {
     background(0)
-    stroke(255)
-    noFill()
-    strokeWeight(3)
+    
     translate(width / 2, height / 2)
     // rotate(-90)
     // scale(0.75, 2.25);
@@ -50,14 +49,33 @@ function draw() {
     image(img, 0, 0, width + 100, height + 100)
     pop()
 
+    var alpha = map(amp, 0, 255, 180, 150)
+    fill(0, alpha)
+    noStroke()
+    ellipse(0, 259 + 360, width + 1100, height)
+    stroke(255)
+    noFill()
+    strokeWeight(5)
+    smooth();
+
     var waveform = fft.waveform()
 
     for (var t = -1; t <= 1; t += 2) {
         beginShape()
-        for (var i = 90; i <= 180; i++) {
+        stroke(255)
+        fill(50)
+        for (var i = 90; i <= 180; i += 0.5) {
             var index = floor(map(i, 0, 180, 0, waveform.length - 1))
             
-            var r = map(waveform[index], -1, 1, 150, 350)  // original 150, 350
+            var r = map(waveform[index], -1, 1, 150, 350)  // original -1, 1, 150, 350
+            // var r = map(floor(sqrt((waveform[10 * floor((index + 1 ) / 10)] + 1) * 100)), 0, 10, 150, 350)  // original -1, 1, 150, 350
+            
+            // if (r < 225) {
+            //     r = 350
+            // }
+            // else {
+            //     r = r
+            // }
 
             var x = r * sin(i) * t * stretch_factor  // to stretch
             var y = r * cos(i) + (height / height_translate_factor) // translate down a bit
@@ -65,6 +83,27 @@ function draw() {
             vertex(x,y)
         }
         endShape()
+        // beginShape()
+        // // light blue color
+        // stroke(0, 255, 255, 240)
+        // for (var i = 90; i <= 180; i++) {
+        //     var index = floor(map(i, 0, 180, 0, waveform.length - 1))
+            
+        //     var r = map(waveform[index], -1, 1, 150, 350)  // original -1, 1, 150, 350
+
+        //     if (r < 225) {
+        //         r = 350
+        //     }
+        //     else {
+        //         r = r
+        //     }
+
+        //     var x = r * sin(i) * t * stretch_factor  // to stretch
+        //     var y = r * cos(i) + (height / height_translate_factor) // translate down a bit
+        //     // line(i, height, i, height - y)
+        //     vertex(x,y - 3)
+        // }
+        // endShape()
     }
 
     var p = new Particle()
