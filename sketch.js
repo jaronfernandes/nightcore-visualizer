@@ -10,10 +10,10 @@ const img_file_name = 'background_pic.jpeg';
 const font = 'Avenir Next Ultra Light';
 
 const smoothing = 0.95;
-const max_rect_length = 50;
+const max_rect_length = 100;
 const stretch_factor = 4;
 const ellipseScaleY = 0.8;
-const height_translate_factor = 1.9;
+const height_translate_factor = 1.8;
 
 const consecutive_thresholds = 20;
 const error = 5;
@@ -23,8 +23,8 @@ var num_abovebelow_threshold = 0;
 var on_chorus = false;
 var particles = [];
 
-const visualizer_setting = 1;  // 0, 1, 2
-const rectangular_colour = [0, 0, 255, 255];
+const visualizer_setting = 2;  // 0, 1, 2
+const rectangular_colour = [255, 255, 255, 255];
 const song_text_colour = [255, 255, 255, 255];
 const artists_text_colour = [255, 255, 255, 255];
 var w;
@@ -83,6 +83,11 @@ function draw() {
         image(img, 0, 0, width + 100, height + 100);
         pop();
 
+        // rectangle for text on top
+        fill(0, 0, 0, 100);
+        noStroke();
+        rect(-width / 2, -height / 2, width, 65);
+
         stroke(255, 255, 255);
         noFill();
         strokeWeight(5);
@@ -94,19 +99,20 @@ function draw() {
     var amp = fft.getEnergy(20, 200);
 
     for (var t = -1; t <= 1; t += 2) {
-        if (visualizer_setting == 2) {
-            // strokeWeight(0);
-            // stroke(255, 255, 255);
-            // for (var i = 0; i < spectrum.length; i++) {
-            //     var ampy = spectrum[i];
+        if (visualizer_setting == 3) {
+            strokeWeight(0);
+            stroke(255, 255, 255);
+            for (var i = 0; i < spectrum.length; i++) {
+                var ampy = spectrum[i];
 
-            //     var y = map(ampy, 0, 256, height, height / 2);
-            //     // line(i * w, height, i * w, y);
-            //     fill(i, 255, 255);
-            //     rect(i * w, y, w, (height - y));
-            // }
-
-            var totalRectangles = 180 / 0.125; // Total number of rectangles you want
+                var y = map(ampy, 0, 256, height, height / 2);
+                // line(i * w, height, i * w, y);
+                fill(i, 255, 255);
+                rect(i * w, y, w, (height - y));
+            }
+        }
+        else if (visualizer_setting == 2) {
+            var totalRectangles = 180 / 0.2; // Total number of rectangles you want
             var angleIncrement = TWO_PI / totalRectangles; // Even angular increment
 
             stroke(rectangular_colour[0], rectangular_colour[1], rectangular_colour[2], rectangular_colour[3]);
@@ -115,23 +121,12 @@ function draw() {
             for (var i = totalRectangles / 2; i < totalRectangles; i++) {
                 var angle = i * angleIncrement; // Constant angular increment
                 var index = floor(map(angle, 0, TWO_PI, 0, spectrum.length - 1));
-                var amplitude = spectrum[spectrum.length - 1 - index] //* hann(index, spectrum.length); 
-
-                // if (index > 850 && index < 1250 || index > 0 && index < 684) {
-                //     // stroke(0, 255, 255);
-                //     if (index > 670 && index < 684) {
-                //         amplitude *= 2;
-                //     } else {
-                //         amplitude *= 3;
-                //     }
-                // }
-                // else {
-                amplitude *= hann(index, spectrum.length);
-                //}
+                var amplitude = spectrum[index] //* hann(index, spectrum.length); 
                 
                 var baseR = 250;
                 // var rectLength = 25 + exp(amplitude / 0.1); // Consider dynamic adjustment here if needed
-                var rectLength = map(amplitude, 0, 256, 0, 2 * max_rect_length); // Consider dynamic adjustment here if needed
+                var rectLength = map(amplitude, 0, 256, 0, 3 * max_rect_length); // Consider dynamic adjustment here if needed
+                var y = map(amplitude, 0, 256, height, height / 2);
 
                 // Adjusted for ellipse
                 var baseX = (baseR * cos(angle)) * t * stretch_factor;
@@ -141,6 +136,8 @@ function draw() {
                 var endX = ((baseR + rectLength) * cos(angle)) * t * stretch_factor;
                 var endY = ((baseR + rectLength) * sin(angle)) * ellipseScaleY + (height / height_translate_factor);
 
+                // rect(i * w, recLength, w, (height - recLength));
+                
                 rect(baseX, baseY, 2, -rectLength);
 
                 fill(0, 0, 0, 127);
@@ -177,7 +174,7 @@ function draw() {
                 
                 // Draw the rectangle (using lines for simplicity)
                 push();
-                stroke(255);
+                stroke(rectangular_colour[0], rectangular_colour[1], rectangular_colour[2], rectangular_colour[3]);
                 rect(baseX, baseY, 2, -rectLength);
                 // line(baseX, baseY, endX, endY);
                 // vertex(baseX, baseY);
@@ -229,7 +226,8 @@ function draw() {
     strokeWeight(3);
     stroke(song_text_colour[0], song_text_colour[1], song_text_colour[2], song_text_colour[3]);
     fill(song_text_colour[0], song_text_colour[1], song_text_colour[2], song_text_colour[3]);
-    text(spaceOutText(song_text), 0, 310);
+    text(spaceOutText(song_text), 0, 330);
+    textFont(font, 25);
     stroke(artists_text_colour[0], artists_text_colour[1], artists_text_colour[2], artists_text_colour[3]);
     fill(artists_text_colour[0], artists_text_colour[1], artists_text_colour[2], artists_text_colour[3]);
     text(spaceOutText(artists), 0, 385);
@@ -239,10 +237,10 @@ function draw() {
     let p = new Particle();
     particles.push(p);
 
-    if (on_chorus) {
-        let p2 = new Particle();
-        particles.push(p2);
-    }
+    // if (on_chorus) {
+    //     let p2 = new Particle();
+    //     particles.push(p2);
+    // }
 
     if (amp < amp_condition_val - error && on_chorus) {
         num_abovebelow_threshold += 1;
@@ -286,6 +284,20 @@ function mouseClicked() {
 }
 
 
+function keyPressed() {
+    // spacebar
+    if (keyCode === 32) {
+        if (song.isPlaying()) {
+            song.pause();
+            noLoop();
+        } else {
+            song.play();
+            loop();
+        }
+    }
+}
+
+
 class Particle {
     constructor() {
         this.pos = p5.Vector.random2D().mult(250);
@@ -315,6 +327,6 @@ class Particle {
     show() {
         noStroke();
         fill(255, 255, 255, this.opacity);
-        ellipse(this.pos.x * stretch_factor, this.pos.y + (height / height_translate_factor), this.w);
+        ellipse(this.pos.x * stretch_factor, this.pos.y + (height / height_translate_factor) + 40, this.w);
     }
 }
