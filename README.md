@@ -21,7 +21,7 @@ Add your song and image to the `assets` folder. Then in `sketch.js` modify the c
 | **error** | `int` |  Error for amplitude threshold |
 | **disable_particles** | `boolean` | Disables background particles |
 | **visualizer_setting** | `int` |  0 - Waveform, 1 - Waveform bars, 2 - Frequency bars |
-| **rectangular_colour** | `int` |  Bar colour |
+| **rectangular_colour** | `int[4]` |  Bar colour |
 | **song_text_colour** | `int[4]` |  Song text colour |
 | **artists_text_colour** | `int[4]` |  Artists text colour |
 
