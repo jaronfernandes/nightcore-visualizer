@@ -9,7 +9,7 @@ const song_file_name = 'it_aint_me_codeko_nightcore.mp3';
 const img_file_name = 'background_pic.jpeg';
 const font = 'Avenir Next Ultra Light';
 
-const smoothing = 0.91;
+const smoothing = 0.95;
 const max_rect_length = 50;
 const stretch_factor = 4;
 const ellipseScaleY = 0.8;
@@ -18,11 +18,15 @@ const height_translate_factor = 1.9;
 const consecutive_thresholds = 20;
 const error = 5;
 const amp_condition_val = 200;
+const disable_particles = false;
 var num_abovebelow_threshold = 0;
 var on_chorus = false;
 var particles = [];
 
 const visualizer_setting = 1;  // 0, 1, 2
+const rectangular_colour = [0, 0, 255, 255];
+const song_text_colour = [255, 255, 255, 255];
+const artists_text_colour = [255, 255, 255, 255];
 var w;
 
 function spaceOutText(text) {
@@ -33,18 +37,8 @@ function spaceOutText(text) {
     return spaced_text;
 }
 
-function smoothWaveform(waveform, windowSize) {
-    let smoothed = [];
-    for (let i = 0; i < waveform.length; i++) {
-        let start = max(0, i - windowSize);
-        let end = min(waveform.length - 1, i + windowSize);
-        let sum = 0;
-        for (let j = start; j <= end; j++) {
-            sum += waveform[j];
-        }
-        smoothed[i] = sum / (end - start + 1);
-    }
-    return smoothed;
+function hann(i, N) {
+    return 0.5 * (1 - cos((TWO_PI * i) / (N - 1)));
 }
 
 function preload() {
@@ -74,7 +68,7 @@ function setup() {
 function draw() {
     background(0);
 
-    if (visualizer_setting != 2) {
+    if (visualizer_setting != 3) {
         translate(width / 2, height / 2);
         // rotate(-90);
         // scale(0.75, 2.25);
@@ -93,24 +87,67 @@ function draw() {
         noFill();
         strokeWeight(5);
         smooth();
-
-        var waveform = fft.waveform();
-        var spectrum = fft.analyze();
-        var amp = fft.getEnergy(20, 200);
     }
+
+    var waveform = fft.waveform();
+    var spectrum = fft.analyze();
+    var amp = fft.getEnergy(20, 200);
 
     for (var t = -1; t <= 1; t += 2) {
         if (visualizer_setting == 2) {
-            strokeWeight(0);
-            stroke(255, 255, 255);
-            for (var i = 0; i < spectrum.length; i++) {
-                var ampy = spectrum[(i + 100) % spectrum.length];
+            // strokeWeight(0);
+            // stroke(255, 255, 255);
+            // for (var i = 0; i < spectrum.length; i++) {
+            //     var ampy = spectrum[i];
 
-                var y = map(ampy, 0, 256, height, height / 2);
-                // line(i * w, height, i * w, y);
-                fill(i, 255, 255);
-                rect(i * w, y, w, (height - y));
+            //     var y = map(ampy, 0, 256, height, height / 2);
+            //     // line(i * w, height, i * w, y);
+            //     fill(i, 255, 255);
+            //     rect(i * w, y, w, (height - y));
+            // }
+
+            var totalRectangles = 180 / 0.125; // Total number of rectangles you want
+            var angleIncrement = TWO_PI / totalRectangles; // Even angular increment
+
+            stroke(rectangular_colour[0], rectangular_colour[1], rectangular_colour[2], rectangular_colour[3]);
+            beginShape();
+            noFill();
+            for (var i = totalRectangles / 2; i < totalRectangles; i++) {
+                var angle = i * angleIncrement; // Constant angular increment
+                var index = floor(map(angle, 0, TWO_PI, 0, spectrum.length - 1));
+                var amplitude = spectrum[spectrum.length - 1 - index] //* hann(index, spectrum.length); 
+
+                // if (index > 850 && index < 1250 || index > 0 && index < 684) {
+                //     // stroke(0, 255, 255);
+                //     if (index > 670 && index < 684) {
+                //         amplitude *= 2;
+                //     } else {
+                //         amplitude *= 3;
+                //     }
+                // }
+                // else {
+                amplitude *= hann(index, spectrum.length);
+                //}
+                
+                var baseR = 250;
+                // var rectLength = 25 + exp(amplitude / 0.1); // Consider dynamic adjustment here if needed
+                var rectLength = map(amplitude, 0, 256, 0, 2 * max_rect_length); // Consider dynamic adjustment here if needed
+
+                // Adjusted for ellipse
+                var baseX = (baseR * cos(angle)) * t * stretch_factor;
+                fill(rectangular_colour[0], rectangular_colour[1], rectangular_colour[2], rectangular_colour[3]);
+                var baseY = (baseR * sin(angle)) * ellipseScaleY + (height / height_translate_factor);
+                
+                var endX = ((baseR + rectLength) * cos(angle)) * t * stretch_factor;
+                var endY = ((baseR + rectLength) * sin(angle)) * ellipseScaleY + (height / height_translate_factor);
+
+                rect(baseX, baseY, 2, -rectLength);
+
+                fill(0, 0, 0, 127);
+                stroke(0, 0, 0, 0);
+                vertex(baseX, baseY);
             }
+            endShape();
         }
         // GOOD ONE BELOW:
 
@@ -188,15 +225,24 @@ function draw() {
         }
     }
     
-    stroke(255, 255, 255);
     textFont(font, 40);
     strokeWeight(3);
-    fill(255, 255, 255);
+    stroke(song_text_colour[0], song_text_colour[1], song_text_colour[2], song_text_colour[3]);
+    fill(song_text_colour[0], song_text_colour[1], song_text_colour[2], song_text_colour[3]);
     text(spaceOutText(song_text), 0, 310);
+    stroke(artists_text_colour[0], artists_text_colour[1], artists_text_colour[2], artists_text_colour[3]);
+    fill(artists_text_colour[0], artists_text_colour[1], artists_text_colour[2], artists_text_colour[3]);
     text(spaceOutText(artists), 0, 385);
 
-    var p = new Particle();
+    if (disable_particles) return;
+
+    let p = new Particle();
     particles.push(p);
+
+    if (on_chorus) {
+        let p2 = new Particle();
+        particles.push(p2);
+    }
 
     if (amp < amp_condition_val - error && on_chorus) {
         num_abovebelow_threshold += 1;
