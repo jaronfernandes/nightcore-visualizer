@@ -5,8 +5,11 @@ var fft;
 
 const song_text = 'It Ain\'t Me';
 const artists = 'Kygo & Selena Gomez (Codeko Remix)';
+// const song_text = 'PLAY';
+// const artists = 'Alan Walker, K-391, Tungevaag, Mangoo (Alan Walker x Niya Remix)';
 const song_file_name = 'it_aint_me_codeko_nightcore.mp3';
 const img_file_name = 'background_pic.jpeg';
+// const img_file_name = 'frieren.png';
 const font = 'Avenir Next Ultra Light';
 
 const smoothing = 0.95;
@@ -27,6 +30,8 @@ const visualizer_setting = 2;  // 0, 1, 2
 const rectangular_colour = [255, 255, 255, 255];
 const song_text_colour = [255, 255, 255, 255];
 const artists_text_colour = [255, 255, 255, 255];
+
+const disable_rectangle = true;
 var w;
 
 function spaceOutText(text) {
@@ -84,9 +89,11 @@ function draw() {
         pop();
 
         // rectangle for text on top
-        fill(0, 0, 0, 100);
-        noStroke();
-        rect(-width / 2, -height / 2, width, 65);
+        if (!disable_rectangle) {
+            fill(0, 0, 0, 100);
+            noStroke();
+            rect(-width / 2, -height / 2, width, 65);
+        }
 
         stroke(255, 255, 255);
         noFill();
