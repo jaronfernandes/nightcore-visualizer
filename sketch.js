@@ -5,11 +5,8 @@ var fft;
 
 const song_text = 'It Ain\'t Me';
 const artists = 'Kygo & Selena Gomez (Codeko Remix)';
-// const song_text = 'PLAY';
-// const artists = 'Alan Walker, K-391, Tungevaag, Mangoo (Alan Walker x Niya Remix)';
 const song_file_name = 'it_aint_me_codeko_nightcore.mp3';
 const img_file_name = 'background_pic.jpeg';
-// const img_file_name = 'frieren.png';
 const font = 'Avenir Next Ultra Light';
 
 const smoothing = 0.95;
