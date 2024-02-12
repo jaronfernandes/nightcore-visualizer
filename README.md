@@ -14,10 +14,17 @@ Add your song and image to the `assets` folder. Then in `sketch.js` modify the c
 | **img_file_name** | `string` | Background pic in the assets folder |
 | **font** | `string`, `p5.Font` | Font for text (may have to use loadFont for non p5.js fonts) |
 | **stretch_factor** | `int` | Waveform X-stretch |
+| **ellipseScaleY** | `int` | Frequency Y-stretch |
 | **height_translate_factor** | `int` | Waveform Y translation |
-| **consecutive_thresholds** | `int` |  Number of consecutive above/below amp threshold to speed up particles or not |
-| **error** | `int` |  Error for threshold |
 | **amp_condition_val** | `int` |  Base amp threshold value to compare |
+| **consecutive_thresholds** | `int` |  Number of consecutive above/below amp threshold to speed up particles or not |
+| **error** | `int` |  Error for amplitude threshold |
+| **disable_particles** | `boolean` | Disables background particles |
+| **visualizer_setting** | `int` |  0 - Waveform, 1 - Waveform bars, 2 - Frequency bars |
+| **rectangular_colour** | `int` |  Bar colour |
+| **song_text_colour** | `int[4]` |  Song text colour |
+| **artists_text_colour** | `int[4]` |  Artists text colour |
+
 
 # Credits
 - Kygo & Selena Gomez - It Ain't Me (Codeko Remix)
