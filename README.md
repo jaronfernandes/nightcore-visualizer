@@ -30,4 +30,3 @@ Add your song and image to the `assets` folder. Then in `sketch.js` modify the c
 
 # Credits
 - Kygo & Selena Gomez - It Ain't Me (Codeko Remix)
-- Inspired by Colorful Coding
