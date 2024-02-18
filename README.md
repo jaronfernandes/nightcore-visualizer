@@ -28,5 +28,8 @@ Add your song and image to the `assets` folder. Then in `sketch.js` modify the c
 # Demo
 ![Screenshot](demo_images/it_aint_me_demo.png)
 
+<p align='center'>
+    (with visualizer_setting=2)
+</p>
 # Credits
 - Kygo & Selena Gomez - It Ain't Me (Codeko Remix)
