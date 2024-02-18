@@ -25,6 +25,8 @@ Add your song and image to the `assets` folder. Then in `sketch.js` modify the c
 | **song_text_colour** | `int[4]` |  Song text colour |
 | **artists_text_colour** | `int[4]` |  Artists text colour |
 
+# Demo
+![Screenshot](demo_images/it_aint_me_demo.png)
 
 # Credits
 - Kygo & Selena Gomez - It Ain't Me (Codeko Remix)
