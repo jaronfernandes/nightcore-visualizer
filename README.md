@@ -31,5 +31,6 @@ Add your song and image to the `assets` folder. Then in `sketch.js` modify the c
 <p align='center'>
     (with visualizer_setting=2)
 </p>
+
 # Credits
 - Kygo & Selena Gomez - It Ain't Me (Codeko Remix)
